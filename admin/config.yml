@@ -1,6 +1,5 @@
 backend:
-  name: github
-  repo: youss44youss/Interesting-Gadgets
+  name: git-gateway
   branch: main
 
 media_folder: "assets/uploads"
@@ -13,6 +12,5 @@ collections:
     create: true
     slug: "{{slug}}"
     fields:
-      - { label: "Title", name: "title", widget: "string" }
-      - { label: "Description", name: "description", widget: "text" }
-      - { label: "Image", name: "image", widget: "image" }
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Description", name: "body", widget: "markdown"}
