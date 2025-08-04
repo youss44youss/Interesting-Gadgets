@@ -1,0 +1,15 @@
+{
+  "name": "interesting-gadgets-main",
+  "version": "1.0.0",
+  "description": "Discover some of the most unique and useful gadgets on Amazon",
+  "main": "generate-product-index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "gray-matter": "^4.0.3"
+  }
+}

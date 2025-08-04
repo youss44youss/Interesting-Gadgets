@@ -166,17 +166,32 @@
       }
     }
 
-    function searchProducts() {
-      const input = document.getElementById("searchInput").value.toLowerCase();
-      const cards = document.querySelectorAll(".card");
-      cards.forEach(card => {
-        const title = card.querySelector(".card-title").textContent.toLowerCase();
-        card.style.display = title.includes(input) ? "block" : "none";
-      });
-    }
+    <script>
+  async function fetchProducts() {
+    const response = await fetch('/products/index.json');
+    const products = await response.json();
 
-    fetchProducts();
-  </script>
+    const container = document.getElementById('productContainer');
+    container.innerHTML = ''; // Clear default content
+
+    products.forEach((product) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img src="${product.image}" alt="${product.title}">
+        <div class="card-content">
+          <div class="card-title">${product.title}</div>
+          <div class="card-desc">${product.description}</div>
+          <a href="${product.link}" target="_blank">Buy on Amazon</a>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  fetchProducts();
+</script>
+
 
 </body>
 </html>
