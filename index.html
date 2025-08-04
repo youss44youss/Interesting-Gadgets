@@ -2,10 +2,109 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Interesting Gadgets</title>
   <style>
-    /* [Same CSS styles you already have, keep as-is] */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0d1b2a;
+      color: #ffffff;
+    }
+    header {
+      text-align: center;
+      padding: 30px 20px 10px;
+      background-color: #1b263b;
+    }
+    header img {
+      max-height: 60px;
+      margin-bottom: 15px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5em;
+    }
+    header p {
+      margin: 10px 0 20px;
+    }
+    .search-bar {
+      text-align: center;
+      margin: 20px auto;
+    }
+    .search-bar input {
+      padding: 10px;
+      width: 300px;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+      gap: 20px;
+    }
+    .card {
+      background-color: #1e2e3e;
+      border-radius: 10px;
+      width: 300px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      overflow: hidden;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    .card-content {
+      padding: 15px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .card-desc {
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    .card a {
+      display: inline-block;
+      padding: 10px 15px;
+      background-color: #ff9900;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    footer {
+      text-align: center;
+      padding: 30px 0;
+      background-color: #1b263b;
+    }
+    .social-icons a {
+      margin: 0 10px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 20px;
+    }
+    .social-icons a:hover {
+      color: #ff9900;
+    }
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .search-bar input {
+        width: 90%;
+      }
+    }
   </style>
 </head>
 <body>
@@ -21,18 +120,52 @@
   </div>
 
   <div class="container" id="productContainer">
-    <!-- Products will be injected here -->
+    <!-- Product cards will be inserted here dynamically -->
   </div>
 
   <footer>
     <div class="social-icons">
-      <a href="#">📱 TikTok</a>
-      <a href="#">📺 YouTube</a>
-      <a href="#">📷 Instagram</a>
+      <a href="#" target="_blank">📱 TikTok</a>
+      <a href="#" target="_blank">📺 YouTube</a>
+      <a href="#" target="_blank">📷 Instagram</a>
     </div>
   </footer>
 
   <script>
+    async function fetchProducts() {
+      const container = document.getElementById("productContainer");
+      const response = await fetch("/products");
+      const text = await response.text();
+      const files = [...text.matchAll(/href="(.*?)"/g)]
+        .map(m => m[1])
+        .filter(href => href.endsWith(".md"));
+
+      for (const file of files) {
+        const productRes = await fetch(`/products/${file}`);
+        const content = await productRes.text();
+        const titleMatch = content.match(/^title: (.*)$/m);
+        const descMatch = content.match(/^description: (.*)$/m);
+        const imgMatch = content.match(/^image: (.*)$/m);
+        const linkMatch = content.match(/^buy_link: (.*)$/m);
+
+        const title = titleMatch?.[1] || "Untitled";
+        const desc = descMatch?.[1] || "";
+        const img = imgMatch?.[1] || "https://via.placeholder.com/300x200";
+        const link = linkMatch?.[1] || "#";
+
+        container.innerHTML += `
+          <div class="card">
+            <img src="${img}" alt="${title}">
+            <div class="card-content">
+              <div class="card-title">${title}</div>
+              <div class="card-desc">${desc}</div>
+              <a href="${link}" target="_blank">Buy on Amazon</a>
+            </div>
+          </div>
+        `;
+      }
+    }
+
     function searchProducts() {
       const input = document.getElementById("searchInput").value.toLowerCase();
       const cards = document.querySelectorAll(".card");
@@ -42,44 +175,8 @@
       });
     }
 
-    async function loadProducts() {
-      const container = document.getElementById("productContainer");
-
-      const files = [
-        "products/smart-wireless-doorbell.md"
-        // You can manually add more or automate this in build step if needed
-      ];
-
-      for (const file of files) {
-        const res = await fetch(file);
-        const text = await res.text();
-        const match = text.match(/---([\s\S]*?)---/);
-        if (!match) continue;
-        const yaml = match[1];
-        const body = text.replace(match[0], "").trim();
-
-        const data = Object.fromEntries(
-          yaml.split("\n").map(line => {
-            const [key, ...rest] = line.split(":");
-            return [key.trim(), rest.join(":").trim()];
-          })
-        );
-
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <img src="${data.image}" alt="${data.title}">
-          <div class="card-content">
-            <div class="card-title">${data.title}</div>
-            <div class="card-desc">${data.description}</div>
-            <a href="${data.link}" target="_blank">Buy on Amazon</a>
-          </div>
-        `;
-        container.appendChild(card);
-      }
-    }
-
-    loadProducts();
+    fetchProducts();
   </script>
+
 </body>
 </html>
