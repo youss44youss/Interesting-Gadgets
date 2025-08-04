@@ -5,107 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Interesting Gadgets</title>
   <style>
-    /* [Your CSS styles — unchanged] */
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #0d1b2a;
-      color: #ffffff;
-    }
-    header {
-      text-align: center;
-      padding: 30px 20px 10px;
-      background-color: #1b263b;
-    }
-    header img {
-      max-height: 60px;
-      margin-bottom: 15px;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 2.5em;
-    }
-    header p {
-      margin: 10px 0 20px;
-    }
-    .search-bar {
-      text-align: center;
-      margin: 20px auto;
-    }
-    .search-bar input {
-      padding: 10px;
-      width: 300px;
-      border-radius: 5px;
-      border: none;
-      font-size: 16px;
-    }
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 20px;
-      gap: 20px;
-    }
-    .card {
-      background-color: #1e2e3e;
-      border-radius: 10px;
-      width: 300px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      overflow: hidden;
-      transition: transform 0.2s ease;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-    }
-    .card img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-    }
-    .card-content {
-      padding: 15px;
-    }
-    .card-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .card-desc {
-      font-size: 14px;
-      margin-bottom: 15px;
-    }
-    .card a {
-      display: inline-block;
-      padding: 10px 15px;
-      background-color: #ff9900;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
-    }
-    footer {
-      text-align: center;
-      padding: 30px 0;
-      background-color: #1b263b;
-    }
-    .social-icons a {
-      margin: 0 10px;
-      color: #fff;
-      text-decoration: none;
-      font-size: 20px;
-    }
-    .social-icons a:hover {
-      color: #ff9900;
-    }
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-        align-items: center;
-      }
-      .search-bar input {
-        width: 90%;
-      }
-    }
+    /* [Same CSS styles you already have, keep as-is] */
   </style>
 </head>
 <body>
@@ -121,37 +21,14 @@
   </div>
 
   <div class="container" id="productContainer">
-    <div class="card">
-      <img src="https://via.placeholder.com/300x200?text=Gadget+1" alt="Gadget 1">
-      <div class="card-content">
-        <div class="card-title">Smart Water Bottle</div>
-        <div class="card-desc">Keeps your drink at the perfect temperature and reminds you to stay hydrated.</div>
-        <a href="#">Buy on Amazon</a>
-      </div>
-    </div>
-    <div class="card">
-      <img src="https://via.placeholder.com/300x200?text=Gadget+2" alt="Gadget 2">
-      <div class="card-content">
-        <div class="card-title">Mini Projector</div>
-        <div class="card-desc">Portable projector for watching movies anywhere – even on the ceiling!</div>
-        <a href="#">Buy on Amazon</a>
-      </div>
-    </div>
-    <div class="card">
-      <img src="https://via.placeholder.com/300x200?text=Gadget+3" alt="Gadget 3">
-      <div class="card-content">
-        <div class="card-title">Magnetic Phone Stand</div>
-        <div class="card-desc">360° adjustable phone stand with strong grip for desk or kitchen use.</div>
-        <a href="#">Buy on Amazon</a>
-      </div>
-    </div>
+    <!-- Products will be injected here -->
   </div>
 
   <footer>
     <div class="social-icons">
-      <a href="#" target="_blank">📱 TikTok</a>
-      <a href="#" target="_blank">📺 YouTube</a>
-      <a href="#" target="_blank">📷 Instagram</a>
+      <a href="#">📱 TikTok</a>
+      <a href="#">📺 YouTube</a>
+      <a href="#">📷 Instagram</a>
     </div>
   </footer>
 
@@ -164,21 +41,45 @@
         card.style.display = title.includes(input) ? "block" : "none";
       });
     }
-  </script>
 
-  <!-- ✅ Netlify Identity Widget Script -->
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-  <script>
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.on("init", (user) => {
-        if (!user) {
-          window.netlifyIdentity.on("login", () => {
-            document.location.href = "/admin/";
-          });
-        }
-      });
+    async function loadProducts() {
+      const container = document.getElementById("productContainer");
+
+      const files = [
+        "products/smart-wireless-doorbell.md"
+        // You can manually add more or automate this in build step if needed
+      ];
+
+      for (const file of files) {
+        const res = await fetch(file);
+        const text = await res.text();
+        const match = text.match(/---([\s\S]*?)---/);
+        if (!match) continue;
+        const yaml = match[1];
+        const body = text.replace(match[0], "").trim();
+
+        const data = Object.fromEntries(
+          yaml.split("\n").map(line => {
+            const [key, ...rest] = line.split(":");
+            return [key.trim(), rest.join(":").trim()];
+          })
+        );
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <img src="${data.image}" alt="${data.title}">
+          <div class="card-content">
+            <div class="card-title">${data.title}</div>
+            <div class="card-desc">${data.description}</div>
+            <a href="${data.link}" target="_blank">Buy on Amazon</a>
+          </div>
+        `;
+        container.appendChild(card);
+      }
     }
-  </script>
 
+    loadProducts();
+  </script>
 </body>
 </html>
