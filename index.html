@@ -118,6 +118,8 @@
   <div class="search-bar">
     <input type="text" id="searchInput" placeholder="Search for gadgets..." onkeyup="searchProducts()">
   </div>
+  <section id="products-container"></section>
+
 
   <div class="container" id="productContainer">
     <!-- Product cards will be inserted here dynamically -->
@@ -168,28 +170,41 @@
 
     <script>
   async function fetchProducts() {
-    const response = await fetch('/products/index.json');
-    const products = await response.json();
+    const container = document.getElementById('products-container');
 
-    const container = document.getElementById('productContainer');
-    container.innerHTML = ''; // Clear default content
+    const productFiles = [
+      "smart-wireless-doorbell.md",
+      // Add more filenames if needed or make it dynamic later
+    ];
 
-    products.forEach((product) => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <img src="${product.image}" alt="${product.title}">
-        <div class="card-content">
-          <div class="card-title">${product.title}</div>
-          <div class="card-desc">${product.description}</div>
-          <a href="${product.link}" target="_blank">Buy on Amazon</a>
+    for (const file of productFiles) {
+      const response = await fetch(`/products/${file}`);
+      const text = await response.text();
+
+      const frontMatterMatch = text.match(/---(.*?)---/s);
+      const frontMatter = frontMatterMatch ? frontMatterMatch[1] : '';
+      const body = text.replace(/---(.*?)---/s, '').trim();
+
+      const titleMatch = frontMatter.match(/title:\s*(.+)/);
+      const descriptionMatch = frontMatter.match(/description:\s*(.+)/);
+      const imageMatch = frontMatter.match(/image:\s*(.+)/);
+
+      const title = titleMatch ? titleMatch[1].trim() : 'Untitled';
+      const description = descriptionMatch ? descriptionMatch[1].trim() : '';
+      const image = imageMatch ? imageMatch[1].trim() : '';
+
+      container.innerHTML += `
+        <div class="product">
+          <h2>${title}</h2>
+          <img src="${image}" alt="${title}" />
+          <p>${description}</p>
         </div>
       `;
-      container.appendChild(card);
-    });
+    }
   }
 
   fetchProducts();
+</script>
 </script>
 
 
